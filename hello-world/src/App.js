@@ -1,6 +1,7 @@
-import React, { Component } from 'react';
+import React from 'react';
 import logo from './logo.svg';
 import RandomNumber from './RandomNumber';
+import Contacts from './Contacts';
 import './App.css';
 
 class App extends React.Component {
@@ -27,10 +28,12 @@ class App extends React.Component {
           <img src={logo} className="App-logo" alt="logo" />
           <h2>Welcome to React</h2>
         </div>
+        <div>
           <RandomNumber number={this.state.value}
                         onUpdate={this.updateValue}/>
+        </div>
         <div>
-
+          <Contacts/>
         </div>
       </div>
     );
