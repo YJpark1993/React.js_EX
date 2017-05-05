@@ -2,8 +2,26 @@ import React from 'react';
 import update from 'react-addons-update';
 import ContactInfo from './ContactInfo';
 import ContactCreator from './ContactCreator';
+import ContactRemover from './ContactRemover';
+import ContactEditor from './ContactEditor';
 class Contacts extends React.Component {
-
+  constructor(props) {
+       super(props);
+       this.state = {
+           contactData: [
+               {name: "Abet", phone: "010-0000-0001"},
+               {name: "Betty", phone: "010-0000-0002"},
+               {name: "Charlie", phone: "010-0000-0003"},
+               {name: "David", phone: "010-0000-0004"}
+           ],
+           // 현재 선택된 컴표넌트의 고유번호
+           selectedKey: -1,
+           selected: {
+             name: "",
+             phone: ""
+           }
+       };
+   }
   insertContact(name, phone) {
     let newState = update(this.state, {
       contactData: {
@@ -12,17 +30,85 @@ class Contacts extends React.Component {
     });
     this.setState(newState);
   }
+  //사용자가 list를 click 했을때 child 컴포넌트로 보낼 메소드
+  onSelect(key) {
+    //toggle code
+    if(key == this.state.selectedKey) {
+      console.log("key select cancelled");
+      this.setState({
+        selectedKey: -1
+      });
+      return;
+    }
+    this.setState({
+      selectedKey: key,
+      selected: this.state.contactData[key]
+    });
+    console.log(key + "is selected");
+  }
+  isSelected(key) {
+    if(this.state.selectedKey == key) {
+      return true;
+    }else {
+      return false;
+    }
+  }
+  removeContact() {
+    // 선택된 list가 없으면 취소
+    if(this.state.selectedKey==-1) {
+      console.log("contact not selected");
+      return;
+    }
+
+    this.setState({
+      contactData: update(
+        this.state.contactData,
+        {
+          //selectedKey 번째 index부터 1개의 원소 제거
+          $splice: [[this.state.selectedKey, 1]]
+        }
+      ),
+      selectedKey: -1
+    });
+  }
+  editContact(name, phone) {
+    this.setState({
+      contactData: update(
+        this.state.contactData,
+        {
+          [this.state.selectedKey]: {
+            name: { $set: name },
+            phone: { $set: phone }
+          }
+        }
+      ),
+      selected: {
+        name: name,
+        phone: phone
+      }
+    });
+  }
   render(){
-    <div>
-      <h1>Contacts</h1>
-      <ul>
-        {this.state.contactData.map((contact, i) => {
-          return (<ContactInfo name={contact.name}
-                               phone={contact.phone}
-                               key={i}/>);
-        })}
-      </ul>
-      <ContactCreator onInsert={this.insertContact.bind(this)}/>
-    </div>
+    return(
+      <div>
+        <h1>Contacts</h1>
+        <ul>
+          {this.state.contactData.map((contact, i) => {
+            return (<ContactInfo name={contact.name}
+                                 phone={contact.phone}
+                                 key={i}
+                          contactKey={i}
+                          isSelected={this.isSelected.bind(this)(i)}
+                            onSelect={this.onSelect.bind(this)}/>);
+          })}
+        </ul>
+        <ContactCreator onInsert={this.insertContact.bind(this)}/>
+        <ContactRemover onRemove={this.removeContact.bind(this)}/>
+        <ContactEditor  onEdit={this.editContact.bind(this)}
+                    isSelected={(this.state.selectedKey != -1)}
+                       contact={this.state.selected}/>
+      </div>
+    );
   }
 }
+export default Contacts;
